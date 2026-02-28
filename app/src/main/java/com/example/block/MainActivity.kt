@@ -2,8 +2,12 @@ package com.example.block
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.app.role.RoleManager
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -20,6 +24,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -68,6 +73,15 @@ fun BlockApp(modifier: Modifier = Modifier) {
 
 @Composable
 private fun HomeScreen(modifier: Modifier = Modifier, onOpenHistory: () -> Unit) {
+    val context = LocalContext.current
+    val blockedStore = remember { BlockedNumberStore(context) }
+    var numberInput by remember { mutableStateOf("") }
+    var blockedNumbers by remember { mutableStateOf(blockedStore.getBlockedNumbers().toList().sorted()) }
+
+    fun refreshBlockedNumbers() {
+        blockedNumbers = blockedStore.getBlockedNumbers().toList().sorted()
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -82,6 +96,75 @@ private fun HomeScreen(modifier: Modifier = Modifier, onOpenHistory: () -> Unit)
             text = stringResource(R.string.home_description),
             style = MaterialTheme.typography.bodyLarge
         )
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.call_blocker_card_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = stringResource(R.string.call_blocker_card_body),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                OutlinedTextField(
+                    value = numberInput,
+                    onValueChange = { numberInput = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.number_input_label)) },
+                    singleLine = true
+                )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = {
+                        if (blockedStore.addNumber(numberInput)) {
+                            numberInput = ""
+                            refreshBlockedNumbers()
+                        }
+                    }) {
+                        Text(text = stringResource(R.string.block_number))
+                    }
+                    Button(onClick = {
+                        openCallScreeningSettings(context)
+                    }) {
+                        Text(text = stringResource(R.string.open_screening_settings))
+                    }
+                }
+
+                if (blockedNumbers.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.no_blocked_numbers),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.blocked_list_title),
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    blockedNumbers.forEach { number ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = number, style = MaterialTheme.typography.bodyMedium)
+                            Button(onClick = {
+                                blockedStore.removeNumber(number)
+                                refreshBlockedNumbers()
+                            }) {
+                                Text(text = stringResource(R.string.unblock_number))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
@@ -186,6 +269,21 @@ fun IncomingCallHistoryScreen(modifier: Modifier = Modifier, onBack: (() -> Unit
             }
         }
     }
+}
+
+
+private fun openCallScreeningSettings(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val roleManager = context.getSystemService(RoleManager::class.java)
+        if (roleManager?.isRoleAvailable(RoleManager.ROLE_CALL_SCREENING) == true &&
+            !roleManager.isRoleHeld(RoleManager.ROLE_CALL_SCREENING)
+        ) {
+            context.startActivity(roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING))
+            return
+        }
+    }
+
+    context.startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
 }
 
 private fun hasReadCallLogPermission(context: Context): Boolean {

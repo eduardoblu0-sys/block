@@ -1,7 +1,15 @@
 <resources>
     <string name="app_name">Monitor de Ligações</string>
     <string name="home_title">Bem-vindo ao Monitor de Ligações</string>
-    <string name="home_description">Acompanhe rapidamente as últimas ligações recebidas do seu aparelho.</string>
+    <string name="home_description">Bloqueie números específicos e acompanhe rapidamente as últimas ligações recebidas.</string>
+    <string name="call_blocker_card_title">Bloqueio de chamadas</string>
+    <string name="call_blocker_card_body">Adicione números para rejeitar ligações automaticamente. Depois, ative este app como bloqueador padrão nas configurações.</string>
+    <string name="number_input_label">Número para bloquear</string>
+    <string name="block_number">Bloquear</string>
+    <string name="unblock_number">Desbloquear</string>
+    <string name="open_screening_settings">Ativar bloqueador</string>
+    <string name="no_blocked_numbers">Nenhum número bloqueado.</string>
+    <string name="blocked_list_title">Números bloqueados</string>
     <string name="home_card_title">Histórico de chamadas</string>
     <string name="home_card_body">Abra a lista para verificar número, data/hora e duração das chamadas recebidas.</string>
     <string name="home_open_history">Abrir histórico</string>
