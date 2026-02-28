@@ -1,8 +1,9 @@
 package com.example.block
 
+import android.os.Build
+import android.telecom.Call
 import android.telecom.CallScreeningService
 import android.telecom.CallScreeningService.CallResponse
-import android.telecom.Call
 
 class CallBlockerService : CallScreeningService() {
 
@@ -14,6 +15,11 @@ class CallBlockerService : CallScreeningService() {
             CallResponse.Builder()
                 .setDisallowCall(true)
                 .setRejectCall(true)
+                .apply {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        setSilenceCall(true)
+                    }
+                }
                 .setSkipCallLog(false)
                 .setSkipNotification(true)
                 .build()

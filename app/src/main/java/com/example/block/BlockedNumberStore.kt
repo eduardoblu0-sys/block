@@ -35,7 +35,7 @@ class BlockedNumberStore(context: Context) {
         if (normalizedIncoming.isEmpty()) return false
 
         return getBlockedNumbers().any { blocked ->
-            normalizedIncoming == blocked || normalizedIncoming.endsWith(blocked)
+            numbersMatch(normalizedIncoming, blocked)
         }
     }
 
@@ -43,8 +43,20 @@ class BlockedNumberStore(context: Context) {
         private const val PREFS_NAME = "blocked_numbers"
         private const val KEY_BLOCKED_NUMBERS = "numbers"
 
+        private const val MIN_COMPARISON_DIGITS = 8
+
         fun normalize(number: String): String {
-            return number.filter { it.isDigit() || it == '+' }
+            return number.filter { it.isDigit() }
+        }
+
+        private fun numbersMatch(first: String, second: String): Boolean {
+            if (first == second) return true
+            if (first.endsWith(second) || second.endsWith(first)) return true
+
+            val digitsToCompare = minOf(first.length, second.length, MIN_COMPARISON_DIGITS)
+            if (digitsToCompare <= 0) return false
+
+            return first.takeLast(digitsToCompare) == second.takeLast(digitsToCompare)
         }
     }
 }
