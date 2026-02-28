@@ -29,4 +29,13 @@
     <string name="received_at">Recebida em: %1$s</string>
     <string name="duration_seconds">Duração: %1$ds</string>
     <string name="number_already_blocked">Já bloqueado</string>
+
+    <string name="in_call_title">Chamada em andamento</string>
+    <string name="in_call_state">Estado: %1$s</string>
+    <string name="in_call_answer">Atender</string>
+    <string name="in_call_reject">Recusar</string>
+    <string name="in_call_hang_up">Encerrar</string>
+    <string name="in_call_close">Fechar</string>
+    <string name="in_call_unknown_number">Número desconhecido</string>
+    <string name="in_call_no_active_call">Sem chamada ativa.</string>
 </resources>
