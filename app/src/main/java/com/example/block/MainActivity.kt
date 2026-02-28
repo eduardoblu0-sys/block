@@ -192,12 +192,18 @@ private fun HomeScreen(modifier: Modifier = Modifier, onOpenHistory: () -> Unit)
 fun IncomingCallHistoryScreen(modifier: Modifier = Modifier, onBack: (() -> Unit)? = null) {
     val context = LocalContext.current
     val repository = remember { CallHistoryRepository(context.contentResolver) }
+    val blockedStore = remember { BlockedNumberStore(context) }
 
     var hasPermission by remember { mutableStateOf(hasReadCallLogPermission(context)) }
     var history by remember { mutableStateOf(emptyList<CallEntry>()) }
+    var blockedNumbers by remember { mutableStateOf(blockedStore.getBlockedNumbers()) }
 
     fun refreshHistory() {
         history = if (hasPermission) repository.getIncomingHistory() else emptyList()
+    }
+
+    fun refreshBlockedNumbers() {
+        blockedNumbers = blockedStore.getBlockedNumbers()
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -209,6 +215,7 @@ fun IncomingCallHistoryScreen(modifier: Modifier = Modifier, onBack: (() -> Unit
 
     LaunchedEffect(hasPermission) {
         refreshHistory()
+        refreshBlockedNumbers()
     }
 
     Column(
@@ -264,6 +271,24 @@ fun IncomingCallHistoryScreen(modifier: Modifier = Modifier, onBack: (() -> Unit
                             text = stringResource(R.string.duration_seconds, entry.durationSeconds),
                             style = MaterialTheme.typography.bodySmall
                         )
+
+                        val isBlocked = blockedNumbers.contains(BlockedNumberStore.normalize(entry.number))
+                        Button(
+                            onClick = {
+                                if (blockedStore.addNumber(entry.number)) {
+                                    refreshBlockedNumbers()
+                                }
+                            },
+                            enabled = !isBlocked
+                        ) {
+                            Text(
+                                if (isBlocked) {
+                                    stringResource(R.string.number_already_blocked)
+                                } else {
+                                    stringResource(R.string.block_number)
+                                }
+                            )
+                        }
                     }
                 }
             }

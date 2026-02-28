@@ -22,4 +22,5 @@
     <string name="empty_history">Nenhuma ligação recebida encontrada no histórico do aparelho.</string>
     <string name="received_at">Recebida em: %1$s</string>
     <string name="duration_seconds">Duração: %1$ds</string>
+    <string name="number_already_blocked">Já bloqueado</string>
 </resources>
