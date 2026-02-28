@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">block</string>
+    <string name="app_name">Monitor de Ligações</string>
+    <string name="title_call_history">Histórico de ligações recebidas</string>
+    <string name="permission_explanation">Conceda a permissão de histórico de chamadas para visualizar ligações recebidas.</string>
+    <string name="grant_permission">Conceder permissão</string>
+    <string name="refresh">Atualizar</string>
+    <string name="no_permission">Sem permissão para exibir histórico.</string>
+    <string name="empty_history">Nenhuma ligação recebida encontrada no histórico do aparelho.</string>
+    <string name="received_at">Recebida em: %1$s</string>
+    <string name="duration_seconds">Duração: %1$ds</string>
 </resources>
