@@ -2,6 +2,12 @@
     <string name="app_name">Monitor de Ligações</string>
     <string name="home_title">Bem-vindo ao Monitor de Ligações</string>
     <string name="home_description">Bloqueie números específicos e acompanhe rapidamente as últimas ligações recebidas.</string>
+    <string name="default_phone_app_title">App de telefone padrão</string>
+    <string name="default_phone_app_enabled">Este app já está definido como telefone padrão.</string>
+    <string name="default_phone_app_disabled">Defina este app como telefone padrão para funcionar como app de chamadas.</string>
+    <string name="request_default_phone_app">Definir como padrão</string>
+    <string name="grant_call_permission">Permitir chamadas</string>
+    <string name="open_phone">Abrir discador</string>
     <string name="call_blocker_card_title">Bloqueio de chamadas</string>
     <string name="call_blocker_card_body">Adicione números para rejeitar ligações automaticamente. Depois, ative este app como bloqueador padrão nas configurações.</string>
     <string name="number_input_label">Número para bloquear</string>

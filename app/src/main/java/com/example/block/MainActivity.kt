@@ -1,13 +1,15 @@
 package com.example.block
 
 import android.Manifest
+import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.app.role.RoleManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.telecom.TelecomManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -77,9 +79,26 @@ private fun HomeScreen(modifier: Modifier = Modifier, onOpenHistory: () -> Unit)
     val blockedStore = remember { BlockedNumberStore(context) }
     var numberInput by remember { mutableStateOf("") }
     var blockedNumbers by remember { mutableStateOf(blockedStore.getBlockedNumbers().toList().sorted()) }
+    var isDefaultDialer by remember { mutableStateOf(isDefaultDialerApp(context)) }
+    var hasCallPermission by remember { mutableStateOf(hasCallPhonePermission(context)) }
 
     fun refreshBlockedNumbers() {
         blockedNumbers = blockedStore.getBlockedNumbers().toList().sorted()
+    }
+
+    fun refreshAppRoleState() {
+        isDefaultDialer = isDefaultDialerApp(context)
+        hasCallPermission = hasCallPhonePermission(context)
+    }
+
+    val callPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasCallPermission = granted
+    }
+
+    LaunchedEffect(Unit) {
+        refreshAppRoleState()
     }
 
     Column(
@@ -96,6 +115,51 @@ private fun HomeScreen(modifier: Modifier = Modifier, onOpenHistory: () -> Unit)
             text = stringResource(R.string.home_description),
             style = MaterialTheme.typography.bodyLarge
         )
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.default_phone_app_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = if (isDefaultDialer) {
+                        stringResource(R.string.default_phone_app_enabled)
+                    } else {
+                        stringResource(R.string.default_phone_app_disabled)
+                    },
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = {
+                        requestDefaultDialerRole(context)
+                        refreshAppRoleState()
+                    }) {
+                        Text(stringResource(R.string.request_default_phone_app))
+                    }
+                    Button(onClick = {
+                        if (hasCallPermission) {
+                            openDialer(context)
+                        } else {
+                            callPermissionLauncher.launch(Manifest.permission.CALL_PHONE)
+                        }
+                    }) {
+                        Text(
+                            text = if (hasCallPermission) {
+                                stringResource(R.string.open_phone)
+                            } else {
+                                stringResource(R.string.grant_call_permission)
+                            }
+                        )
+                    }
+                }
+            }
+        }
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -296,6 +360,29 @@ fun IncomingCallHistoryScreen(modifier: Modifier = Modifier, onBack: (() -> Unit
     }
 }
 
+private fun requestDefaultDialerRole(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val roleManager = context.getSystemService(RoleManager::class.java)
+        if (roleManager?.isRoleAvailable(RoleManager.ROLE_DIALER) == true &&
+            !roleManager.isRoleHeld(RoleManager.ROLE_DIALER)
+        ) {
+            context.startActivity(roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER))
+            return
+        }
+    }
+
+    context.startActivity(
+        Intent(TelecomManagerCompat.ACTION_CHANGE_DEFAULT_DIALER).putExtra(
+            TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME,
+            context.packageName
+        )
+    )
+}
+
+private fun openDialer(context: Context) {
+    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:"))
+    context.startActivity(intent)
+}
 
 private fun openCallScreeningSettings(context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -311,9 +398,29 @@ private fun openCallScreeningSettings(context: Context) {
     context.startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
 }
 
+private fun isDefaultDialerApp(context: Context): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val roleManager = context.getSystemService(RoleManager::class.java)
+        roleManager?.isRoleHeld(RoleManager.ROLE_DIALER) == true
+    } else {
+        false
+    }
+}
+
 private fun hasReadCallLogPermission(context: Context): Boolean {
     return ContextCompat.checkSelfPermission(
         context,
         Manifest.permission.READ_CALL_LOG
     ) == PackageManager.PERMISSION_GRANTED
+}
+
+private fun hasCallPhonePermission(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.CALL_PHONE
+    ) == PackageManager.PERMISSION_GRANTED
+}
+
+private object TelecomManagerCompat {
+    const val ACTION_CHANGE_DEFAULT_DIALER = TelecomManager.ACTION_CHANGE_DEFAULT_DIALER
 }
