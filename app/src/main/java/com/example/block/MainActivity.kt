@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,7 +42,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             BlockTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    IncomingCallHistoryScreen(modifier = Modifier.padding(innerPadding))
+                    BlockApp(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -49,7 +50,63 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun IncomingCallHistoryScreen(modifier: Modifier = Modifier) {
+fun BlockApp(modifier: Modifier = Modifier) {
+    var showHistory by remember { mutableStateOf(false) }
+
+    if (showHistory) {
+        IncomingCallHistoryScreen(
+            modifier = modifier,
+            onBack = { showHistory = false }
+        )
+    } else {
+        HomeScreen(
+            modifier = modifier,
+            onOpenHistory = { showHistory = true }
+        )
+    }
+}
+
+@Composable
+private fun HomeScreen(modifier: Modifier = Modifier, onOpenHistory: () -> Unit) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.home_title),
+            style = MaterialTheme.typography.headlineSmall
+        )
+        Text(
+            text = stringResource(R.string.home_description),
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.home_card_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = stringResource(R.string.home_card_body),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Button(onClick = onOpenHistory) {
+                    Text(text = stringResource(R.string.home_open_history))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun IncomingCallHistoryScreen(modifier: Modifier = Modifier, onBack: (() -> Unit)? = null) {
     val context = LocalContext.current
     val repository = remember { CallHistoryRepository(context.contentResolver) }
 
@@ -96,6 +153,11 @@ fun IncomingCallHistoryScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            if (onBack != null) {
+                Button(onClick = onBack) {
+                    Text(stringResource(R.string.back))
+                }
+            }
             Button(onClick = { refreshHistory() }, enabled = hasPermission) {
                 Text(stringResource(R.string.refresh))
             }

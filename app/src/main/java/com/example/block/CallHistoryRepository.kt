@@ -24,37 +24,39 @@ class CallHistoryRepository(private val contentResolver: ContentResolver) {
 
         val selection = "${CallLog.Calls.TYPE} = ?"
         val selectionArgs = arrayOf(CallLog.Calls.INCOMING_TYPE.toString())
-        val sortOrder = "${CallLog.Calls.DATE} DESC LIMIT $limit"
+        val sortOrder = "${CallLog.Calls.DATE} DESC"
 
         val history = mutableListOf<CallEntry>()
 
-        contentResolver.query(
-            CallLog.Calls.CONTENT_URI,
-            projection,
-            selection,
-            selectionArgs,
-            sortOrder
-        )?.use { cursor ->
-            val numberIndex = cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
-            val dateIndex = cursor.getColumnIndexOrThrow(CallLog.Calls.DATE)
-            val durationIndex = cursor.getColumnIndexOrThrow(CallLog.Calls.DURATION)
+        runCatching {
+            contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+            )?.use { cursor ->
+                val numberIndex = cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+                val dateIndex = cursor.getColumnIndexOrThrow(CallLog.Calls.DATE)
+                val durationIndex = cursor.getColumnIndexOrThrow(CallLog.Calls.DURATION)
 
-            while (cursor.moveToNext()) {
-                val number = cursor.getString(numberIndex)?.takeIf { it.isNotBlank() } ?: "Número desconhecido"
-                val date = cursor.getLong(dateIndex)
-                val durationSeconds = cursor.getLong(durationIndex)
+                while (cursor.moveToNext()) {
+                    val number = cursor.getString(numberIndex)?.takeIf { it.isNotBlank() } ?: "Número desconhecido"
+                    val date = cursor.getLong(dateIndex)
+                    val durationSeconds = cursor.getLong(durationIndex)
 
-                history.add(
-                    CallEntry(
-                        number = number,
-                        receivedAt = date,
-                        durationSeconds = durationSeconds
+                    history.add(
+                        CallEntry(
+                            number = number,
+                            receivedAt = date,
+                            durationSeconds = durationSeconds
+                        )
                     )
-                )
+                }
             }
         }
 
-        return history
+        return history.take(limit)
     }
 
     companion object {

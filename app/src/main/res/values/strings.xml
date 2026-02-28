@@ -1,9 +1,15 @@
 <resources>
     <string name="app_name">Monitor de Ligações</string>
+    <string name="home_title">Bem-vindo ao Monitor de Ligações</string>
+    <string name="home_description">Acompanhe rapidamente as últimas ligações recebidas do seu aparelho.</string>
+    <string name="home_card_title">Histórico de chamadas</string>
+    <string name="home_card_body">Abra a lista para verificar número, data/hora e duração das chamadas recebidas.</string>
+    <string name="home_open_history">Abrir histórico</string>
     <string name="title_call_history">Histórico de ligações recebidas</string>
     <string name="permission_explanation">Conceda a permissão de histórico de chamadas para visualizar ligações recebidas.</string>
     <string name="grant_permission">Conceder permissão</string>
     <string name="refresh">Atualizar</string>
+    <string name="back">Voltar</string>
     <string name="no_permission">Sem permissão para exibir histórico.</string>
     <string name="empty_history">Nenhuma ligação recebida encontrada no histórico do aparelho.</string>
     <string name="received_at">Recebida em: %1$s</string>
